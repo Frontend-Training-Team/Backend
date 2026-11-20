@@ -50,7 +50,7 @@ let userSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        minLength: 8,
+        minlength: 8,
         select: false,
     },
     phone: {
@@ -73,7 +73,7 @@ default:"https://cdn-icons-png.flaticon.com/512/149/149071.png",
     wishlist:[
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "product",
+            ref: "Product",
         }
     ],
     isVerified:{
@@ -81,11 +81,13 @@ default:"https://cdn-icons-png.flaticon.com/512/149/149071.png",
         default: false,
     },
 
-    tokens: [{
-        type: String,
-        required: true,
-    }]
-},
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpire: {
+      type: Date,
+    },
+  },
 {
         timestamps: true,
     }
@@ -104,6 +106,6 @@ userSchema.methods.comparePassword = async function (enteredpass){
 
 
 
-let UserModel = mongoose.model('Enginee', userSchema)
+let UserModel = mongoose.model('User', userSchema)
 
 export { UserModel }
