@@ -2,7 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import { mongooseConnect } from './DB/mongoose.js'
 import dns from 'dns'
-import { globalErrorHandler } from './middleware/errorHandler.js'
+import { notFound, globalErrorHandler } from './middleware/errorHandler.js';
 import userRouter from './routes/userRoutes.js'
 
 dns.setServers(["8.8.8.8", "8.8.4.4"])
@@ -18,9 +18,14 @@ app.get('/', (req, res) => {
   res.json({ message: "Server is running successfully! 🚀" })
 })
 
-app.use('/users', userRouter)
 
-app.use(globalErrorHandler)
+
+app.use('/users', userRouter);
+
+app.use(notFound);
+app.use(globalErrorHandler); 
+
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)

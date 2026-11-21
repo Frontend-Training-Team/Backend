@@ -1,61 +1,73 @@
-class AppError extends Error {
+class CreateAppError extends Error {
   constructor(message, statusCode) {
     super(message);
     this.statusCode = statusCode;
-    this.status = String(statusCode).startsWith('4') ? 'fail' : 'error';
     this.isOperational = true;
-
     Error.captureStackTrace(this, this.constructor);
   }
 }
 
+const notFound = (req, res, next) => {
+  next(new CreateAppError(`Route not found: ${req.originalUrl}`, 404));
+};
+
 const globalErrorHandler = (err, req, res, next) => {
-  let statusCode = err.statusCode || 500;
-  let message = err.message || 'Internal Server Error';
+  let error = err;
+  let statusCode = error.statusCode || 500;
+  let message = error.message || 'Internal Server Error';
 
   // هندلة أخطاء Joi
   if (err.isJoi || (err.name === 'ValidationError' && err.details)) {
-    statusCode = 400;
-    message = err.details.map((detail) => detail.message).join(', ');
+    const joiMessage = err.details
+      .map((detail) => detail.message)
+      .join(', ');
+    error = new CreateAppError(joiMessage, 400);
+    statusCode = error.statusCode;
+    message = error.message;
   }
 
-  // هندلة خطأ Mongoose CastError (مثل Invalid ObjectId)
+  // هندلة خطأ Mongoose CastError (مثل invalid ObjectId)
   if (err.name === 'CastError') {
-    statusCode = 400;
-    message = `Invalid ${err.path}: ${err.value}`;
+    error = new CreateAppError(`Invalid ${err.path}: ${err.value}`, 400);
+    statusCode = error.statusCode;
+    message = error.message;
   }
 
   // هندلة خطأ تكرار الحقول الفريدة في MongoDB / Mongoose
   if (err.code === 11000) {
-    statusCode = 409;
     const duplicateField = Object.keys(err.keyValue || {}).join(', ');
-    message = `Duplicate value for field: ${duplicateField}`;
+    error = new CreateAppError(`Duplicate value for field: ${duplicateField}`, 409);
+    statusCode = error.statusCode;
+    message = error.message;
   }
 
   // هندلة خطأ Mongoose ValidationError
   if (err.name === 'ValidationError' && err.errors) {
-    statusCode = 400;
-    message = Object.values(err.errors)
+    const validationMessage = Object.values(err.errors)
       .map((el) => el.message)
       .join(', ');
+    error = new CreateAppError(validationMessage, 400);
+    statusCode = error.statusCode;
+    message = error.message;
   }
 
   // هندلة أخطاء JWT
   if (err.name === 'JsonWebTokenError') {
-    statusCode = 401;
-    message = 'Invalid token. Please log in again.';
+    error = new CreateAppError('Invalid token. Please log in again.', 401);
+    statusCode = error.statusCode;
+    message = error.message;
   }
 
   if (err.name === 'TokenExpiredError') {
-    statusCode = 401;
-    message = 'Token has expired. Please log in again.';
+    error = new CreateAppError('Token has expired. Please log in again.', 401);
+    statusCode = error.statusCode;
+    message = error.message;
   }
 
   res.status(statusCode).json({
     success: false,
     message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 };
 
-export { AppError, globalErrorHandler };
+export { CreateAppError, notFound, globalErrorHandler };
