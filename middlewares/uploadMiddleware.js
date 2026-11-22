@@ -1,19 +1,17 @@
-import multer from 'multer'
-
+import multer from "multer";
 // Memory Storage
-const storage = multer.memoryStorage()
+const storage = multer.memoryStorage();
 
-// Images Only
+// Images Only (Strict MimeTypes)
 const fileFilter = (req, file, cb) => {
+  const allowedImagesTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-  const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-
-  if (allowedMimeTypes.includes(file.mimetype)) {
-    // accepted file
-    cb(null, true)
+  if (allowedImagesTypes.includes(file.mimetype)) {
+    cb(null, true);
   } else {
-    // file rejected and returned error
-    cb(new Error('Only image files are allowed!'), false)
+    const error = new Error("Only JPG, PNG or WEBP images");
+    error.status = 400;
+    cb(error);
   }
 };
 
@@ -21,16 +19,12 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5 MB 
+    fileSize: 5 * 1024 * 1024, // 5 MB
   },
-})
+});
 
-// upload single image 
-export const uploadSingle = (fieldName) => {
-  return upload.single(fieldName)
-};
+// Upload single image
+export const uploadSingle = (fieldName) => upload.single(fieldName);
 
-// upload multiple images , max count for one upload
-export const uploadMultiple = (fieldName, maxCount = 5) => {
-  return upload.array(fieldName, maxCount)
-};
+// Upload multiple images (default max 5)
+export const uploadMultiple = (fieldName, maxCount = 5) => upload.array(fieldName, maxCount);

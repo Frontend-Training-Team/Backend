@@ -30,78 +30,78 @@ const addressSchema = new mongoose.Schema(
 
   },
   {
-    _id:false,
+    _id: false,
   }
 );
 let userSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-        trim: true,
-    },
-    email: {
-        type: String,
-        required: true,
-        lowercase: true,
-        unique: true,
-        trim: true,
-    },
-    password: {
-        type: String,
-        required: true,
-        trim: true,
-        minlength: 8,
-        select: false,
-    },
-    phone: {
-        type: String,
-        trim:true,
-        default: "",
-    },
-    avatar: {
-type:String,
-default:"https://cdn-icons-png.flaticon.com/512/149/149071.png",
-
-    },
-    role: {
-        type: String,
-        enum: ["admin","customer"],
-        default: 'customer',
-    },
-    addresses: [addressSchema]
-    ,
-    wishlist:[
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Product",
-        }
-    ],
-    isVerified:{
-        type: Boolean,
-        default: false,
-    },
-
-    resetPasswordToken: {
-      type: String,
-    },
-    resetPasswordExpire: {
-      type: Date,
-    },
+  username: {
+    type: String,
+    required: true,
+    trim: true,
   },
-{
-        timestamps: true,
+  email: {
+    type: String,
+    required: true,
+    lowercase: true,
+    unique: true,
+    trim: true,
+  },
+  password: {
+    type: String,
+    required: true,
+    trim: true,
+    minlength: 8,
+    select: false,
+  },
+  phone: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  avatar: {
+    type: String,
+    default: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+
+  },
+  role: {
+    type: String,
+    enum: ["admin", "customer"],
+    default: 'customer',
+  },
+  addresses: [addressSchema]
+  ,
+  wishlist: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
     }
+  ],
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+
+  resetPasswordToken: {
+    type: String,
+  },
+  resetPasswordExpire: {
+    type: Date,
+  },
+},
+  {
+    timestamps: true,
+  }
 )
-userSchema.pre("save",async function (){
-const user = this
-if ( !user. isModified('password')){
+userSchema.pre("save", async function () {
+  const user = this
+  if (!user.isModified('password')) {
     return
-}
-user.password = await bcryptjs.hash(user.password, 8)
+  }
+  user.password = await bcryptjs.hash(user.password, 8)
 })
 
-userSchema.methods.comparePassword = async function (enteredpass){
-    return await bcryptjs.compare(enteredpass, this.password)
+userSchema.methods.comparePassword = async function (enteredpass) {
+  return await bcryptjs.compare(enteredpass, this.password)
 }
 
 
