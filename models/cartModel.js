@@ -10,9 +10,12 @@ const cartItemSchema = new mongoose.Schema(
         name: {
             type: String,
             required: true,
+            trim: true,
         },
         image: {
             type: String,
+            trim: true,
+            default: "",
         },
         price: {
             type: Number,
@@ -23,6 +26,7 @@ const cartItemSchema = new mongoose.Schema(
             type: Number,
             required: true,
             min: 1,
+            max: 100,
         },
     },
     { _id: false }
@@ -44,6 +48,8 @@ const cartSchema = new mongoose.Schema(
             code: {
                 type: String,
                 uppercase: true,
+                trim: true,
+                enum: ["SAVE10", "SAVE20", "SAVE50", "SAVE80", "OFF50"],
             },
             discountType: {
                 type: String,
@@ -63,10 +69,11 @@ const cartSchema = new mongoose.Schema(
 );
 
 cartSchema.virtual("subtotal").get(function () {
-    return (this.items || []).reduce(
+    const rawSubtotal = (this.items || []).reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
     );
+    return Number(rawSubtotal.toFixed(2));
 });
 
 cartSchema.virtual("discountAmount").get(function () {
@@ -74,19 +81,22 @@ cartSchema.virtual("discountAmount").get(function () {
         return 0;
     }
 
+    const value = this.coupon.discountValue || 0;
+    let discount = 0;
+
     if (this.coupon.discountType === "percentage") {
-        return this.subtotal * (this.coupon.discountValue || 0) / 100;
+        const clampedPercent = Math.min(Math.max(value, 0), 100);
+        discount = (this.subtotal * clampedPercent) / 100;
+    } else if (this.coupon.discountType === "fixed") {
+        discount = Math.min(value, this.subtotal);
     }
 
-    if (this.coupon.discountType === "fixed") {
-        return Math.min(this.coupon.discountValue || 0, this.subtotal);
-    }
-
-    return 0;
+    return Number(discount.toFixed(2));
 });
 
 cartSchema.virtual("total").get(function () {
-    return this.subtotal - this.discountAmount;
+    const netTotal = Math.max(0, this.subtotal - this.discountAmount);
+    return Number(netTotal.toFixed(2));
 });
 
 cartSchema.virtual("itemCount").get(function () {
@@ -96,6 +106,6 @@ cartSchema.virtual("itemCount").get(function () {
     );
 });
 
-const CartModel = mongoose.model("Cart", cartSchema);
+const cartModel = mongoose.model("Cart", cartSchema);
 
-export { CartModel };
+export { cartModel };
