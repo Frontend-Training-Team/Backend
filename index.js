@@ -14,18 +14,10 @@ const app = express()
 app.use(express.json())
 mongooseConnect()
 
-app.get('/', (req, res) => {
-  res.json({ message: "Server is running successfully! 🚀" })
-})
-
-
-
 app.use('/users', userRouter);
 
 app.use(notFound);
 app.use(globalErrorHandler); 
-
-
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`)

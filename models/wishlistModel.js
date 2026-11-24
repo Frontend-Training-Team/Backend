@@ -1,22 +1,22 @@
 import mongoose from "mongoose";
 
 const wishlistSchema = new mongoose.Schema({
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      unique: true,
-    },
-
-    products: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-      },
-    ],
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    unique: true,
   },
+
+  products: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    },
+  ],
+},
   {
-    timestamps: true,       // سجّلي تاريخ الإنشاء وآخر تعديل تلقائيًا. 
+    timestamps: true,       
   });
 
 // تجيب المنج مش بس ترجعلي ال ID
