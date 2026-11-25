@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const orderItemSchema = new mongoose.Schema(
   {
     product: {
@@ -154,16 +154,6 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
 
-    confirmedAt: {
-      type: Date,
-      default: null,
-    },
-
-    shippedAt: {
-      type: Date,
-      default: null,
-    },
-
     deliveredAt: {
       type: Date,
       default: null,
@@ -174,9 +164,14 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
 
-    returnedAt: {
-      type: Date,
-      default: null,
+    customerNote: {
+      type: String,
+      maxlength: 1000,
+    },
+
+    adminNote: {
+      type: String,
+      maxlength: 1000,
     },
   },
   {
